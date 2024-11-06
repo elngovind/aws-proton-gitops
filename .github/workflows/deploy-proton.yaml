@@ -21,34 +21,44 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1  # Replace with your region
+        aws-region: us-east-1  # Replace with your preferred region
 
     - name: Deploy Proton Environment
       env:
         GITHUB_USERNAME: "elngovind"
         GITHUB_REPO_NAME: "aws-proton-gitops"
         GITHUB_BRANCH: ${{ github.ref_name }}  # Uses the current branch
-
       run: |
         aws proton create-environment-template-version \
           --template-name your-environment-template-name \
-          --source-repository "https://github.com/$GITHUB_USERNAME/$GITHUB_REPO_NAME" \
-          --source-branch $GITHUB_BRANCH \
-          --source-file-path proton/environment-template.yaml
+          --major-version 1 \  # Adjust the major version as necessary
+          --source '{
+            "provider": "GITHUB",
+            "repository": "https://github.com/'"$GITHUB_USERNAME"'/'"$GITHUB_REPO_NAME"'",
+            "branch": "'"$GITHUB_BRANCH"'",
+            "directory": "proton/environment-template.yaml"
+          }'
 
         aws proton wait environment-template-version-available \
           --template-name your-environment-template-name \
-          --major-version 1  # Update as necessary
+          --major-version 1
 
     - name: Deploy Proton Service
+      env:
+        GITHUB_USERNAME: "elngovind"
+        GITHUB_REPO_NAME: "aws-proton-gitops"
+        GITHUB_BRANCH: ${{ github.ref_name }}
       run: |
         aws proton create-service-template-version \
           --template-name your-service-template-name \
-          --source-repository "https://github.com/$GITHUB_USERNAME/$GITHUB_REPO_NAME" \
-          --source-branch $GITHUB_BRANCH \
-          --source-file-path proton/service-template.yaml
+          --major-version 1 \  # Adjust the major version as necessary
+          --source '{
+            "provider": "GITHUB",
+            "repository": "https://github.com/'"$GITHUB_USERNAME"'/'"$GITHUB_REPO_NAME"'",
+            "branch": "'"$GITHUB_BRANCH"'",
+            "directory": "proton/service-template.yaml"
+          }'
 
         aws proton wait service-template-version-available \
           --template-name your-service-template-name \
-          --major-version 1  # Update as necessary
-
+          --major-version 1
