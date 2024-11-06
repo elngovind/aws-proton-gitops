@@ -31,8 +31,8 @@ jobs:
       run: |
         aws proton create-environment-template-version \
           --template-name your-environment-template-name \
-          --major-version 1 \  # Adjust the major version as necessary
-          --source "{\"provider\": \"GITHUB\", \"repository\": \"https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}\", \"branch\": \"${GITHUB_BRANCH}\", \"directory\": \"proton/environment-template.yaml\"}"
+          --major-version 1 \
+          --source '{"provider": "GITHUB", "repository": "https://github.com/'"${GITHUB_USERNAME}"'/'"${GITHUB_REPO_NAME}"'", "branch": "'"${GITHUB_BRANCH}"'", "directory": "proton/environment-template.yaml"}'
 
         aws proton wait environment-template-version-available \
           --template-name your-environment-template-name \
@@ -46,8 +46,8 @@ jobs:
       run: |
         aws proton create-service-template-version \
           --template-name your-service-template-name \
-          --major-version 1 \  # Adjust the major version as necessary
-          --source "{\"provider\": \"GITHUB\", \"repository\": \"https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO_NAME}\", \"branch\": \"${GITHUB_BRANCH}\", \"directory\": \"proton/service-template.yaml\"}"
+          --major-version 1 \
+          --source '{"provider": "GITHUB", "repository": "https://github.com/'"${GITHUB_USERNAME}"'/'"${GITHUB_REPO_NAME}"'", "branch": "'"${GITHUB_BRANCH}"'", "directory": "proton/service-template.yaml"}'
 
         aws proton wait service-template-version-available \
           --template-name your-service-template-name \
