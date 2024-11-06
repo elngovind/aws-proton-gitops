@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Observability module with CloudWatch, X-Ray, Prometheus, and Grafana
+
+Parameters:
+  ClusterName:
+    Type: String
+
+Resources:
+  ApplicationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/eks/${ClusterName}/application"
+      RetentionInDays: 30
+
+  PrometheusHelmChart:
+    Type: Custom::HelmChart
+    Properties:
+      Name: "prometheus"
+      Namespace: "monitoring"
+      Chart: "prometheus-community/kube-prometheus-stack"

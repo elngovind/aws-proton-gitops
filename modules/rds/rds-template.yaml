@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: RDS module for DB tier
+
+Parameters:
+  DBSubnetIds:
+    Type: List<String>
+  DBInstanceClass:
+    Type: String
+    Default: "db.t3.medium"
+
+Resources:
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: "mysql"
+      MasterUsername: "admin"
+      MasterUserPassword: "SecurePassword123"
+      DBSubnetGroupName: !Ref DBSubnetGroup
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Subnet group for RDS instance"
+      SubnetIds: !Ref DBSubnetIds

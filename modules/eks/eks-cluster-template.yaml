@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: EKS Cluster module for App tier
+
+Parameters:
+  ClusterName:
+    Type: String
+  AppSubnetIds:
+    Type: List<String>
+
+Resources:
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      ResourcesVpcConfig:
+        SubnetIds: !Ref AppSubnetIds
+        SecurityGroupIds:
+          - !Ref AppSecurityGroupId
+
+Outputs:
+  EKSClusterName:
+    Value: !Ref EKSCluster

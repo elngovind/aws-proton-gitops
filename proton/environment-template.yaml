@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Proton environment template with network, security, EKS, RDS, and observability modules from GitHub
+
+Parameters:
+  GitHubUsername:
+    Type: String
+    Description: The GitHub username or organization where the repository is hosted
+
+  GitHubRepoName:
+    Type: String
+    Description: The GitHub repository name where the module templates are stored
+
+  BranchName:
+    Type: String
+    Default: "main"
+    Description: The branch name of the GitHub repository to pull templates from
+
+  VpcCidr:
+    Type: String
+    Default: "10.0.0.0/16"
+
+  PublicSubnet1Cidr:
+    Type: String
+    Default: "10.0.1.0/24"
+
+  PublicSubnet2Cidr:
+    Type: String
+    Default: "10.0.2.0/24"
+
+  AppSubnet1Cidr:
+    Type: String
+    Default: "10.0.3.0/24"
+
+  AppSubnet2Cidr:
+    Type: String
+    Default: "10.0.4.0/24"
+
+  DBSubnet1Cidr:
+    Type: String
+    Default: "10.0.5.0/24"
+
+  DBSubnet2Cidr:
+    Type: String
+    Default: "10.0.6.0/24"
+
+  ClusterName:
+    Type: String
+    Default: "Proton3TierEKSCluster"
+
+  DBInstanceClass:
+    Type: String
+    Default: "db.t3.medium"
+
+Resources:
+  # Network Stack (VPC with 3-tier subnets)
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/network/vpc-template.yaml"
+      Parameters:
+        VpcCidr: !Ref VpcCidr
+        PublicSubnet1Cidr: !Ref PublicSubnet1Cidr
+        PublicSubnet2Cidr: !Ref PublicSubnet2Cidr
+        AppSubnet1Cidr: !Ref AppSubnet1Cidr
+        AppSubnet2Cidr: !Ref AppSubnet2Cidr
+        DBSubnet1Cidr: !Ref DBSubnet1Cidr
+        DBSubnet2Cidr: !Ref DBSubnet2Cidr
+
+  # Security Stack (Security groups and IAM roles)
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/security/security-template.yaml"
+      Parameters:
+        VPCId: !GetAtt NetworkStack.Outputs.VPCId
+
+  # EKS Cluster Stack
+  EKSClusterStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/eks/eks-cluster-template.yaml"
+      Parameters:
+        ClusterName: !Ref ClusterName
+        AppSubnetIds: !Split [",", !GetAtt NetworkStack.Outputs.AppSubnetIds]
+        AppSecurityGroupId: !GetAtt SecurityStack.Outputs.AppSecurityGroupId
+
+  # RDS Database Stack
+  RDSStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/rds/rds-template.yaml"
+      Parameters:
+        DBSubnetIds: !Split [",", !GetAtt NetworkStack.Outputs.DBSubnetIds]
+        DBInstanceClass: !Ref DBInstanceClass
+        DBSecurityGroupId: !GetAtt SecurityStack.Outputs.DBSecurityGroupId
+
+  # Observability Stack (CloudWatch, X-Ray, Prometheus, Grafana)
+  ObservabilityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/observability/observability-template.yaml"
+      Parameters:
+        ClusterName: !Ref ClusterName
+
+Outputs:
+  VPCId:
+    Value: !GetAtt NetworkStack.Outputs.VPCId
+
+  PublicSubnetIds:
+    Value: !GetAtt NetworkStack.Outputs.PublicSubnetIds
+
+  AppSubnetIds:
+    Value: !GetAtt NetworkStack.Outputs.AppSubnetIds
+
+  DBSubnetIds:
+    Value: !GetAtt NetworkStack.Outputs.DBSubnetIds
+
+  EKSClusterName:
+    Value: !GetAtt EKSClusterStack.Outputs.EKSClusterName

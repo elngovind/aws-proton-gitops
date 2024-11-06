@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS Proton service template for deploying applications to EKS using a LoadBalancer
+
+Parameters:
+  GitHubUsername:
+    Type: String
+    Description: The GitHub username or organization where the repository is hosted
+
+  GitHubRepoName:
+    Type: String
+    Description: The GitHub repository name where the module templates are stored
+
+  BranchName:
+    Type: String
+    Default: "main"
+    Description: The branch name of the GitHub repository to pull templates from
+
+  Namespace:
+    Type: String
+    Default: "prod-app-namespace"
+    Description: Kubernetes namespace for the application
+
+  DeploymentName:
+    Type: String
+    Default: "my-app"
+    Description: Name of the application deployment
+
+  Image:
+    Type: String
+    Default: "myapp-image:latest"
+    Description: Docker image for the application
+
+  Replicas:
+    Type: Number
+    Default: 3
+    Description: Number of replicas for high availability
+
+Resources:
+  # Application Deployment Stack
+  AppDeploymentStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://raw.githubusercontent.com/${GitHubUsername}/${GitHubRepoName}/${BranchName}/modules/app/app-service-template.yaml"
+      Parameters:
+        Namespace: !Ref Namespace
+        DeploymentName: !Ref DeploymentName
+        Image: !Ref Image
+        Replicas: !Ref Replicas
+
+Outputs:
+  ApplicationEndpoint:
+    Value: !GetAtt AppDeploymentStack.Outputs.LoadBalancerDNSName
+    Description: The DNS name of the application LoadBalancer

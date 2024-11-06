@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: VPC with 3-tier architecture for Web, App, and DB subnets
+
+Parameters:
+  VpcCidr:
+    Type: String
+    Default: "10.0.0.0/16"
+    Description: CIDR block for the VPC
+
+  PublicSubnet1Cidr:
+    Type: String
+    Default: "10.0.1.0/24"
+    Description: CIDR block for the first public subnet (Web tier)
+
+  PublicSubnet2Cidr:
+    Type: String
+    Default: "10.0.2.0/24"
+    Description: CIDR block for the second public subnet (Web tier)
+
+  AppSubnet1Cidr:
+    Type: String
+    Default: "10.0.3.0/24"
+    Description: CIDR block for the first private subnet (App tier)
+
+  AppSubnet2Cidr:
+    Type: String
+    Default: "10.0.4.0/24"
+    Description: CIDR block for the second private subnet (App tier)
+
+  DBSubnet1Cidr:
+    Type: String
+    Default: "10.0.5.0/24"
+    Description: CIDR block for the first private subnet (DB tier)
+
+  DBSubnet2Cidr:
+    Type: String
+    Default: "10.0.6.0/24"
+    Description: CIDR block for the second private subnet (DB tier)
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet1Cidr
+      MapPublicIpOnLaunch: true
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicSubnet2Cidr
+      MapPublicIpOnLaunch: true
+
+  AppSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref AppSubnet1Cidr
+      MapPublicIpOnLaunch: false
+
+  AppSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref AppSubnet2Cidr
+      MapPublicIpOnLaunch: false
+
+  DBSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref DBSubnet1Cidr
+      MapPublicIpOnLaunch: false
+
+  DBSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref DBSubnet2Cidr
+      MapPublicIpOnLaunch: false
+
+Outputs:
+  VPCId:
+    Value: !Ref VPC
+  PublicSubnetIds:
+    Value: !Join [",", [!Ref PublicSubnet1, !Ref PublicSubnet2]]
+  AppSubnetIds:
+    Value: !Join [",", [!Ref AppSubnet1, !Ref AppSubnet2]]
+  DBSubnetIds:
+    Value: !Join [",", [!Ref DBSubnet1, !Ref DBSubnet2]]

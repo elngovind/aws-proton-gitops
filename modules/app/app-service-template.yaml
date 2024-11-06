@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Application Service module for EKS
+
+Parameters:
+  Namespace:
+    Type: String
+    Default: "prod-app-namespace"
+  DeploymentName:
+    Type: String
+    Default: "my-app"
+
+Resources:
+  AppDeployment:
+    Type: Custom::KubernetesDeployment
+    Properties:
+      Namespace: !Ref Namespace
+      DeploymentName: !Ref DeploymentName

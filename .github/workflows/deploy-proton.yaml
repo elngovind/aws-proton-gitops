@@ -1,0 +1,54 @@
+name: Deploy Proton Environment and Service
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - staging
+      - prod
+
+jobs:
+  deploy-proton:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2  # Replace with your region
+
+    - name: Deploy Proton Environment
+      env:
+        GITHUB_USERNAME: "your-github-username"
+        GITHUB_REPO_NAME: "your-repo-name"
+        GITHUB_BRANCH: ${{ github.ref_name }}  # Uses the current branch
+
+      run: |
+        aws proton create-environment-template-version \
+          --template-name your-environment-template-name \
+          --source-repository "https://github.com/$GITHUB_USERNAME/$GITHUB_REPO_NAME" \
+          --source-branch $GITHUB_BRANCH \
+          --source-file-path proton/environment-template.yaml
+
+        aws proton wait environment-template-version-available \
+          --template-name your-environment-template-name \
+          --major-version 1  # Update as necessary
+
+    - name: Deploy Proton Service
+      run: |
+        aws proton create-service-template-version \
+          --template-name your-service-template-name \
+          --source-repository "https://github.com/$GITHUB_USERNAME/$GITHUB_REPO_NAME" \
+          --source-branch $GITHUB_BRANCH \
+          --source-file-path proton/service-template.yaml
+
+        aws proton wait service-template-version-available \
+          --template-name your-service-template-name \
+          --major-version 1  # Update as necessary
+
