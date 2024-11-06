@@ -25,8 +25,8 @@ jobs:
 
     - name: Deploy Proton Environment
       env:
-        GITHUB_USERNAME: "your-github-username"
-        GITHUB_REPO_NAME: "your-repo-name"
+        GITHUB_USERNAME: "elngovind"
+        GITHUB_REPO_NAME: "aws-proton-gitops"
         GITHUB_BRANCH: ${{ github.ref_name }}  # Uses the current branch
 
       run: |
